@@ -7,6 +7,12 @@ class ValidationError(Exception):
         self.message = message
         super().__init__(self.message)
 
+
+class NotFoundError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
 def parse_date(value,field):
     if not isinstance(value, str):
         raise ValidationError(f"{field} must be a string in 'YYYY-MM-DD' format.")
@@ -54,3 +60,21 @@ def validate_trip(data):
         "max_travelers": max_travelers,
     }
     
+#Error handling in get by id 
+def register_error_handlers(app):
+
+    @app.errorhandler(ValidationError)
+    def handle_validation_error(error):
+        return {"error": "VALIDATION_ERROR", "message": error.message}, 400
+
+    @app.errorhandler(NotFoundError)
+    def handle_not_found_error(error):
+        return {"error": "NOT_FOUND", "message": error.message}, 404
+
+    @app.errorhandler(404)
+    def handle_unknown_url(error):
+        return {"error": "NOT_FOUND", "message": "The requested URL was not found."}, 404
+
+    @app.errorhandler(405)
+    def handle_wrong_method(error):
+        return {"error": "METHOD_NOT_ALLOWED", "message": "This method is not allowed for this URL."}, 405

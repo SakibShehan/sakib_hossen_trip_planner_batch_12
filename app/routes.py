@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from . import services
-from .validation import ValidationError
+from .validation import ValidationError,register_error_handlers
 
 bp = Blueprint("main", __name__)
 
@@ -24,3 +24,8 @@ def create_trip():
 def get_trips():
     trips = services.get_all_trips()
     return jsonify([trip.to_dict() for trip in trips]), 200
+
+@bp.get("/api/v1/trips/<int:trip_id>")
+def get_trip(trip_id):
+    trip = services.get_trip(trip_id)
+    return trip.to_dict(), 200

@@ -29,3 +29,8 @@ def get_trips():
 def get_trip(trip_id):
     trip = services.get_trip(trip_id)
     return trip.to_dict(), 200
+
+@bp.delete("/api/v1/trips/<int:trip_id>")
+def remove_trip(trip_id):
+    services.delete_trip(trip_id)
+    return {"message": "Trip deleted successfully."}, 200

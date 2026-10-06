@@ -18,3 +18,9 @@ def get_trip(trip_id):
     if trip is None:
         raise NotFoundError("Trip not found.")
     return trip
+
+
+def delete_trip(trip_id):
+    trip = get_trip(trip_id)
+    db.session.delete(trip)
+    db.session.commit()

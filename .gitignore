@@ -1,0 +1,18 @@
+# virtual environments
+.venv/
+venv/
+
+# python cache files
+__pycache__/
+*.pyc
+
+# SQLite database - this will be created automatically at first run
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.idea/
+.vscode/

@@ -9,3 +9,6 @@ def create_trip(data):
     db.session.add(trip)
     db.session.commit()
     return trip
+
+def get_all_trips():
+    return Trip.query.order_by(Trip.id).all()

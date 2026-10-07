@@ -45,3 +45,4 @@ def update_trip(trip_id, data):
 
     db.session.commit()
     return trip
+

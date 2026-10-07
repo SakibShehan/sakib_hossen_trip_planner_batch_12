@@ -4,9 +4,10 @@ from .. import db
 from ..models.trip import Trip
 from ..models.traveler import Traveler
 from ..models.trip_traveler import trip_travelers
-from ..validators.errors import ConflictError
+from ..validators.errors import ConflictError, NotFoundError
 from ..validators.traveler_validator import validate_traveler
 from .trip_service import get_trip
+
 
 
 def find_overlapping_trip(traveler, trip):
@@ -82,3 +83,33 @@ def add_traveler(trip_id, data):
         )
 
     return traveler
+
+
+
+def remove_traveler(trip_id, traveler_id):
+    # check trip exist or not 
+    trip = get_trip(trip_id)
+
+    
+    if trip.status != "PLANNED":
+        raise ConflictError(
+            "TRIP_NOT_OPEN_FOR_TRAVELERS",
+            f"Travelers can only be removed from a PLANNED trip. This trip is {trip.status}.",
+        )
+
+    # traveler must exist 
+    traveler = db.session.get(Traveler, traveler_id)
+    if traveler is None:
+        raise NotFoundError("Traveler not found.")
+
+    # travler should include in the trip
+    if traveler not in trip.travelers:
+        raise NotFoundError("This traveler is not part of this trip.")
+
+    # remove travler and commit in db
+    trip.travelers.remove(traveler)
+    db.session.commit()
+
+def get_all_travelers(trip_id):
+    trip = get_trip(trip_id)
+    return trip.travelers

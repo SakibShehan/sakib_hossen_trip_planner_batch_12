@@ -15,6 +15,10 @@ class Trip(db.Model):
 
     travelers = db.relationship("Traveler", secondary=trip_travelers, back_populates="trips")
 
+    expenses = db.relationship(
+        "Expense", back_populates="trip", cascade="all, delete-orphan"
+    )
+
 
     def to_dict(self):
         return {

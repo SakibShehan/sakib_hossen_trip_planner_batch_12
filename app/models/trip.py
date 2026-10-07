@@ -1,7 +1,9 @@
 from .. import db
+from .trip_traveler import trip_travelers
 
 
 class Trip(db.Model):
+    __tablename__ = "trips"
 
     id = db.Column(db.Integer, primary_key=True)
     destination = db.Column(db.String(100), nullable=False)
@@ -9,7 +11,10 @@ class Trip(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     budget = db.Column(db.Float, nullable=False)
     max_travelers = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default="PLANNED")  # PLANNED, ONGOING, COMPLETED, CANCELLED
+    status = db.Column(db.String(20), nullable=False, default="PLANNED")  # may be PLANNED, ONGOING, COMPLETED, CANCELLED
+
+    travelers = db.relationship("Traveler", secondary=trip_travelers, back_populates="trips")
+
 
     def to_dict(self):
         return {

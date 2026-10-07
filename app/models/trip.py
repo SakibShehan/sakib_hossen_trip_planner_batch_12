@@ -1,4 +1,4 @@
-from . import db
+from .. import db
 
 
 class Trip(db.Model):
@@ -7,9 +7,9 @@ class Trip(db.Model):
     destination = db.Column(db.String(100), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
-    budget = db.Column(db.Float, nullable=False)                
+    budget = db.Column(db.Float, nullable=False)
     max_travelers = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default="Planned")  # may be Ongoing, Completed
+    status = db.Column(db.String(20), nullable=False, default="PLANNED")  # PLANNED, ONGOING, COMPLETED, CANCELLED
 
     def to_dict(self):
         return {

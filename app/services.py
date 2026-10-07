@@ -1,7 +1,7 @@
 from .models import Trip
 from . import db
 from datetime import datetime
-from .validation import validate_trip, NotFoundError
+from .validation import validate_trip, NotFoundError, ConflictError 
 
 def create_trip(data):
     clean_data = validate_trip(data)
@@ -24,3 +24,21 @@ def delete_trip(trip_id):
     trip = get_trip(trip_id)
     db.session.delete(trip)
     db.session.commit()
+
+def update_trip(trip_id, data):
+    trip= get_trip(trip_id)
+
+    if trip.status not in ("Planned", "Ongoing"):
+        raise ConflictError("Only trips with status 'Planned' or 'Ongoing' can be updated.")
+
+    clean_data = validate_trip(data)
+
+    trip.destination = clean_data["destination"]
+    trip.start_date = clean_data["start_date"]
+    trip.end_date = clean_data["end_date"]
+    trip.budget = clean_data["budget"]
+    trip.max_travelers = clean_data["max_travelers"]
+    
+
+    db.session.commit()
+    return trip  

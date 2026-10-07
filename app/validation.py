@@ -2,6 +2,7 @@ from datetime import datetime
 
 REQUIRED_FIELDS = ["destination", "start_date", "end_date", "budget", "max_travelers"]
 
+
 class ValidationError(Exception):
     def __init__(self, message):
         self.message = message
@@ -78,3 +79,16 @@ def register_error_handlers(app):
     @app.errorhandler(405)
     def handle_wrong_method(error):
         return {"error": "METHOD_NOT_ALLOWED", "message": "This method is not allowed for this URL."}, 405
+
+    @app.errorhandler(ConflictError)
+    def handle_conflict_error(error):
+        return {"error": error.code, "message": error.message}, 409
+
+#Error handling in update trip
+class ConflictError(Exception):
+
+    def __init__(self,code,message):
+        self.code=code
+        self.message=message
+        super().__init__(self.message)
+

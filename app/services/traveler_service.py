@@ -110,6 +110,7 @@ def remove_traveler(trip_id, traveler_id):
     trip.travelers.remove(traveler)
     db.session.commit()
 
+#only for personal use to see all travelers in a trip 
 def get_all_travelers(trip_id):
     trip = get_trip(trip_id)
     return trip.travelers

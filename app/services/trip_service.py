@@ -2,7 +2,15 @@ from .. import db
 from ..models.trip import Trip
 from ..validators.errors import ConflictError, NotFoundError
 from ..validators.trip_validator import validate_trip
+from ..validators.status_validator import validate_status
 
+
+ALLOWED_TRANSITIONS = {
+    "PLANNED": ("ONGOING", "CANCELLED"),
+    "ONGOING": ("COMPLETED", "CANCELLED"),
+    "COMPLETED": (),
+    "CANCELLED": (),
+}
 
 def create_trip(data):
     clean_data = validate_trip(data)
@@ -46,3 +54,22 @@ def update_trip(trip_id, data):
     db.session.commit()
     return trip
 
+
+
+def change_trip_status(trip_id, data):
+  
+    trip = get_trip(trip_id)
+
+    # validate status
+    new_status = validate_status(data)
+
+    # valid transiton cjeck from defined transitions
+    if new_status not in ALLOWED_TRANSITIONS[trip.status]:
+        raise ConflictError(
+            "INVALID_STATUS_TRANSITION",
+            f"A trip cannot change from {trip.status} to {new_status}.",
+        )
+
+    trip.status = new_status
+    db.session.commit()
+    return trip

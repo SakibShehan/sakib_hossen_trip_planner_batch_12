@@ -35,3 +35,10 @@ def update_trip(trip_id):
 def remove_trip(trip_id):
     trip_service.delete_trip(trip_id)
     return {"message": "Trip deleted successfully."}, 200
+
+
+@trips_bp.patch("/api/v1/trips/<int:trip_id>/status")
+def change_trip_status(trip_id):
+    data = request.get_json()
+    trip = trip_service.change_trip_status(trip_id, data)
+    return trip.to_dict(), 200

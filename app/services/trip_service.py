@@ -13,6 +13,10 @@ ALLOWED_TRANSITIONS = {
     "CANCELLED": (),
 }
 
+def _to_cents(value):
+    #avoid float errors when comparing money
+    return round(value * 100)
+
 def create_trip(data):
     clean_data = validate_trip(data)
     trip = Trip(**clean_data)
@@ -67,6 +71,14 @@ def update_trip(trip_id, data):
                     "TRAVELER_TRIP_OVERLAP",
                     f"The new dates overlap trip {overlapping_trip.id} for traveler {traveler.email}.",
                 )
+    
+
+    spent_cents = sum(_to_cents(expense.amount) for expense in trip.expenses)
+    if _to_cents(clean_data["budget"]) < spent_cents:
+        raise ConflictError(
+            "BUDGET_BELOW_EXPENSES",
+            f"budget cannot be less than the total expenses already recorded ({spent_cents / 100:.2f}).",
+        )
 
     trip.destination = clean_data["destination"]
     trip.start_date = clean_data["start_date"]

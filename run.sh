@@ -9,4 +9,5 @@ fi
 
 # install dependencies and start the app
 .venv/bin/pip install -r requirements.txt
+.venv/bin/python test.py
 .venv/bin/python run.py

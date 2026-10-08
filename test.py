@@ -5,9 +5,9 @@ import unittest
 from flask import Flask
 
 from app import db
-from app import models  # noqa: F401  (loads the tables)
-from app.services import trip_service
-from app.validators.errors import ValidationError
+from app import models  
+from app.services import trip_service, traveler_service
+from app.validators.errors import ValidationError, ConflictError
 
 
 class ServiceTests(unittest.TestCase):
@@ -37,14 +37,39 @@ class ServiceTests(unittest.TestCase):
         }
         data.update(changes)
         return trip_service.create_trip(data)
+    
+    def person(self, email):
+        return {"name": "Test Person", "email": email}
 
-    # tests
+
+
+
+    # ######################## TESTS #######################################
+
+    #unit test for create trip
     def test_create_trip_starts_planned_and_rejects_bad_dates(self):
         trip = self.make_trip()
         self.assertEqual(trip.status, "PLANNED")
 
         with self.assertRaises(ValidationError):
             self.make_trip(start_date="2026-10-23", end_date="2026-10-20")
+
+    #ubit check for duplicate traveler add
+
+    def test_traveler_cannot_join_twice_or_beyond_capacity(self):
+        trip = self.make_trip(max_travelers=2)
+        traveler_service.add_traveler(trip.id, self.person("sakibshehan@example.com"))
+
+        # same email, different letter case, is still a duplicate
+        with self.assertRaises(ConflictError) as error:
+            traveler_service.add_traveler(trip.id, self.person("SAKIBSHEHAN@example.com"))
+        self.assertEqual(error.exception.code, "DUPLICATE_TRAVELER")
+
+        # the second seat is full, the third is not
+        traveler_service.add_traveler(trip.id, self.person("rahim@example.com"))
+        with self.assertRaises(ConflictError) as error:
+            traveler_service.add_traveler(trip.id, self.person("karim@example.com"))
+        self.assertEqual(error.exception.code, "TRIP_FULL")
 
 
 class Result(unittest.TestResult):

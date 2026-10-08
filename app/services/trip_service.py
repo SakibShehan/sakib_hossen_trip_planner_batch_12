@@ -3,6 +3,7 @@ from ..models.trip import Trip
 from ..validators.errors import ConflictError, NotFoundError
 from ..validators.trip_validator import validate_trip
 from ..validators.status_validator import validate_status
+from .overlap_service import find_overlapping_trip
 
 
 ALLOWED_TRANSITIONS = {
@@ -36,7 +37,6 @@ def delete_trip(trip_id):
     db.session.delete(trip)
     db.session.commit()
 
-
 def update_trip(trip_id, data):
     trip = get_trip(trip_id)
 
@@ -45,13 +45,28 @@ def update_trip(trip_id, data):
 
     clean_data = validate_trip(data)
 
-    # max_travelers must not go below the current traveler count 
+    # max travelers must not go below the current traveler count
     current_traveler_count = len(trip.travelers)
     if clean_data["max_travelers"] < current_traveler_count:
         raise ConflictError(
             "CAPACITY_BELOW_TRAVELER_COUNT",
             f"max_travelers cannot be less than the current traveler count ({current_traveler_count}).",
         )
+
+    # new dates must not overlap another active trip of any traveler 
+    dates_changed = (
+        clean_data["start_date"] != trip.start_date or clean_data["end_date"] != trip.end_date
+    )
+    if dates_changed:
+        for traveler in trip.travelers:
+            overlapping_trip = find_overlapping_trip(
+                traveler, clean_data["start_date"], clean_data["end_date"], trip.id
+            )
+            if overlapping_trip is not None:
+                raise ConflictError(
+                    "TRAVELER_TRIP_OVERLAP",
+                    f"The new dates overlap trip {overlapping_trip.id} for traveler {traveler.email}.",
+                )
 
     trip.destination = clean_data["destination"]
     trip.start_date = clean_data["start_date"]

@@ -7,23 +7,10 @@ from ..models.trip_traveler import trip_travelers
 from ..validators.errors import ConflictError, NotFoundError
 from ..validators.traveler_validator import validate_traveler
 from .trip_service import get_trip
+from .overlap_service import find_overlapping_trip
 
 
 
-def find_overlapping_trip(traveler, trip):
-   #find overlapping trip for a traveler excluding the current trip and cancelled trips
-    return (
-        Trip.query
-        .join(trip_travelers, trip_travelers.c.trip_id == Trip.id)
-        .filter(
-            trip_travelers.c.traveler_id == traveler.id,
-            Trip.id != trip.id,
-            Trip.status != "CANCELLED",
-            Trip.start_date <= trip.end_date,
-            Trip.end_date >= trip.start_date,
-        )
-        .first()
-    )
 
 
 def add_traveler(trip_id, data):
@@ -59,7 +46,7 @@ def add_traveler(trip_id, data):
 
     # check overlapping dates for the same traveler in other trips
     if traveler is not None:
-        overlapping_trip = find_overlapping_trip(traveler, trip)
+        overlapping_trip = find_overlapping_trip( traveler, trip.start_date, trip.end_date, trip.id)
         if overlapping_trip is not None:
             raise ConflictError(
                 "TRAVELER_TRIP_OVERLAP",

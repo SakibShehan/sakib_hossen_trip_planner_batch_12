@@ -45,6 +45,14 @@ def update_trip(trip_id, data):
 
     clean_data = validate_trip(data)
 
+    # max_travelers must not go below the current traveler count 
+    current_traveler_count = len(trip.travelers)
+    if clean_data["max_travelers"] < current_traveler_count:
+        raise ConflictError(
+            "CAPACITY_BELOW_TRAVELER_COUNT",
+            f"max_travelers cannot be less than the current traveler count ({current_traveler_count}).",
+        )
+
     trip.destination = clean_data["destination"]
     trip.start_date = clean_data["start_date"]
     trip.end_date = clean_data["end_date"]

@@ -6,7 +6,7 @@ from flask import Flask
 
 from app import db
 from app import models  
-from app.services import trip_service, traveler_service
+from app.services import trip_service, traveler_service, expense_service
 from app.validators.errors import ValidationError, ConflictError
 
 
@@ -85,6 +85,29 @@ class ServiceTests(unittest.TestCase):
         next_day = self.make_trip(start_date="2026-10-24", end_date="2026-10-26")
         traveler = traveler_service.add_traveler(next_day.id, self.person("ayesha@example.com"))
         self.assertEqual(traveler.email, "ayesha@example.com")
+
+
+#test for expense budget limit
+    def test_expense_can_use_exact_remaining_budget_but_not_more(self):
+        trip = self.make_trip(budget=1000)
+        expense_service.add_expense(trip.id, {"title": "Hotel", "amount": 600})
+        expense_service.add_expense(trip.id, {"title": "Food", "amount": 400})  # exactly the rest
+
+        with self.assertRaises(ConflictError) as error:
+            expense_service.add_expense(trip.id, {"title": "Extra", "amount": 0.01})
+        self.assertEqual(error.exception.code, "BUDGET_EXCEEDED")
+
+#test for valid trip status lifecycle
+    def test_status_follows_the_lifecycle(self):
+        trip = self.make_trip()
+        trip_service.change_trip_status(trip.id, {"status": "ONGOING"})
+
+        with self.assertRaises(ConflictError):  # going backwards is not allowed
+            trip_service.change_trip_status(trip.id, {"status": "PLANNED"})
+
+        trip_service.change_trip_status(trip.id, {"status": "COMPLETED"})
+        with self.assertRaises(ConflictError):  # nothing leaves COMPLETED
+            trip_service.change_trip_status(trip.id, {"status": "CANCELLED"})
 
 
 class Result(unittest.TestResult):

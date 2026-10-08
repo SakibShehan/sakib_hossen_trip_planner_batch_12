@@ -7,7 +7,7 @@ trips_bp = Blueprint("trips", __name__)
 
 @trips_bp.post("/api/v1/trips")
 def create_trip():
-    data = request.get_json(silent=True)
+    data = request.get_json(silent=True,force=True)
     trip = trip_service.create_trip(data)
     return trip.to_dict(), 201
 
@@ -39,6 +39,6 @@ def remove_trip(trip_id):
 
 @trips_bp.patch("/api/v1/trips/<int:trip_id>/status")
 def change_trip_status(trip_id):
-    data = request.get_json()
+    data = request.get_json(force=True, silent=True)
     trip = trip_service.change_trip_status(trip_id, data)
     return trip.to_dict(), 200

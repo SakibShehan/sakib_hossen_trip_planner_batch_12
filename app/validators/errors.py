@@ -1,3 +1,5 @@
+from werkzeug.exceptions import HTTPException
+
 class ValidationError(Exception):
     def __init__(self, message):
         self.message = message
@@ -38,3 +40,20 @@ def register_error_handlers(app):
     @app.errorhandler(405)
     def handle_wrong_method(error):
         return {"error": "METHOD_NOT_ALLOWED", "message": "This method is not allowed for this URL."}, 405
+
+        # any other HTTP error becomes JSON 
+    @app.errorhandler(HTTPException)
+    def handle_http_error(error):
+        return {
+            "error": error.name.upper().replace(" ", "_"),
+            "message": error.description,
+        }, error.code
+
+    #  any unexpected error becomes a JSON 500
+    @app.errorhandler(Exception)
+    def handle_unexpected_error(error):
+        app.logger.exception(error)
+        return {
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "An unexpected error occurred.",
+        }, 500

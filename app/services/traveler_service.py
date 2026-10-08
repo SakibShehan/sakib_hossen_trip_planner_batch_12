@@ -6,7 +6,7 @@ from ..models.traveler import Traveler
 from ..models.trip_traveler import trip_travelers
 from ..validators.errors import ConflictError, NotFoundError
 from ..validators.traveler_validator import validate_traveler
-from .trip_service import get_trip
+from .trip_service import get_trip,MAX_ID
 from .overlap_service import find_overlapping_trip
 
 
@@ -85,6 +85,8 @@ def remove_traveler(trip_id, traveler_id):
         )
 
     # traveler must exist 
+    if traveler_id > MAX_ID:
+        raise NotFoundError("Traveler not found.")
     traveler = db.session.get(Traveler, traveler_id)
     if traveler is None:
         raise NotFoundError("Traveler not found.")

@@ -5,6 +5,8 @@ from ..validators.trip_validator import validate_trip
 from ..validators.status_validator import validate_status
 from .overlap_service import find_overlapping_trip
 
+# largest integer SQLite can store
+MAX_ID = 2**63 - 1
 
 ALLOWED_TRANSITIONS = {
     "PLANNED": ("ONGOING", "CANCELLED"),
@@ -30,6 +32,8 @@ def get_all_trips():
 
 
 def get_trip(trip_id):
+    if trip_id > MAX_ID:
+        raise NotFoundError("Trip not found.")
     trip = db.session.get(Trip, trip_id)
     if trip is None:
         raise NotFoundError("Trip not found.")

@@ -155,7 +155,7 @@ A failed operation never returns a 2xx status.
 
 ---
 
-## 6. Example requests and responses
+## Example requests and responses
 
 The examples use `curl` against a running server. They are shown in the order of a normal trip.
 
@@ -384,7 +384,7 @@ The assignment leaves some details open. These are the decisions made, so the be
 
 ---
 
-## 8. Project structure
+## Project structure
 
 ```
 sakib_hossen_trip_planner_batch_12/

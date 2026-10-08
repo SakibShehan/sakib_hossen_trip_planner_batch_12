@@ -1,6 +1,5 @@
-import math
-
 from .errors import ValidationError
+from .money_validator import validate_money
 
 MAX_TITLE_LENGTH = 100
 MAX_AMOUNT = 1_000_000_000
@@ -21,15 +20,6 @@ def validate_expense(data):
     if len(title) > MAX_TITLE_LENGTH:
         raise ValidationError(f"Title must be at most {MAX_TITLE_LENGTH} characters.")
 
-    amount = data["amount"]
-    if isinstance(amount, bool) or not isinstance(amount, (int, float)):
-        raise ValidationError("Amount must be a number.")
-    if not math.isfinite(amount) or amount <= 0:
-        raise ValidationError("Amount must be greater than zero.")
-    if amount > MAX_AMOUNT:
-        raise ValidationError(f"Amount must not exceed {MAX_AMOUNT}.")
-    # money has at most 2 decimal points
-    if abs(amount * 100 - round(amount * 100)) > 1e-6:
-        raise ValidationError("Amount must have at most 2 decimal places.")
+    amount = validate_money(data["amount"], "Amount", MAX_AMOUNT)
 
-    return {"title": title, "amount": round(amount, 2)}
+    return {"title": title, "amount": amount}

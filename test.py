@@ -71,6 +71,21 @@ class ServiceTests(unittest.TestCase):
             traveler_service.add_traveler(trip.id, self.person("karim@example.com"))
         self.assertEqual(error.exception.code, "TRIP_FULL")
 
+    #unit test for overlapping trips 
+
+    def test_overlapping_trip_is_rejected_but_back_to_back_is_allowed(self):
+        first = self.make_trip(start_date="2026-10-20", end_date="2026-10-23")
+        traveler_service.add_traveler(first.id, self.person("ayesha@example.com"))
+
+        same_day = self.make_trip(start_date="2026-10-23", end_date="2026-10-25")
+        with self.assertRaises(ConflictError) as error:
+            traveler_service.add_traveler(same_day.id, self.person("ayesha@example.com"))
+        self.assertEqual(error.exception.code, "TRAVELER_TRIP_OVERLAP")
+
+        next_day = self.make_trip(start_date="2026-10-24", end_date="2026-10-26")
+        traveler = traveler_service.add_traveler(next_day.id, self.person("ayesha@example.com"))
+        self.assertEqual(traveler.email, "ayesha@example.com")
+
 
 class Result(unittest.TestResult):
     def __init__(self):
